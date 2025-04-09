@@ -16,8 +16,11 @@ def upload_game():
     file = request.files['file']
     content = file.read().decode('utf-8')
 
+    title = request.form.get('title', 'Untitled Game')
+    username = request.form.get('username', 'Anonymous')
+
     # TODO: custom title
-    game_id = insert_game('test', content)
+    game_id = insert_game(title, content, username)
     # print(f'http://localhost:8000/game/{game_id}')
     return game_id
 

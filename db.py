@@ -10,21 +10,22 @@ def get_db_connection():
     """Create and return a new database connection"""
     return psycopg2.connect(database_url)
 
-def insert_game(title, code):
+def insert_game(title: str, code: str, username: str):
     """
     Insert a new game record into the games table
     
     Args:
         title (str): The title of the game
         code (str): The code of the game
+        username (str): Telegram username of the game idea author
     Returns:
         int: The ID of the newly inserted game, or None if insertion fails
     """
     conn = get_db_connection()
     try:
         with conn.cursor() as cur:
-            query = "INSERT INTO games (title, code) VALUES (%s, %s) RETURNING id"
-            cur.execute(query, (title, code))
+            query = "INSERT INTO games (title, code, username) VALUES (%s, %s, %s) RETURNING id"
+            cur.execute(query, (title, code, username))
             game_id = cur.fetchone()[0]
             conn.commit()
             return game_id
@@ -47,7 +48,7 @@ def get_game(game_id):
     conn = get_db_connection()
     try:
         with conn.cursor() as cur:
-            query = "SELECT id, title, code, created_at FROM games WHERE id = %s"
+            query = "SELECT id, title, code, username, created_at FROM games WHERE id = %s"
             cur.execute(query, (game_id,))
             result = cur.fetchone()
             if result:
@@ -55,7 +56,8 @@ def get_game(game_id):
                     'id': result[0],
                     'title': result[1],
                     'code': result[2],
-                    'created_at': result[3]
+                    'username': result[3],
+                    'created_at': result[4],
                 }
             return None
     except psycopg2.Error as e:
