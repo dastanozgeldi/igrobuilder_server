@@ -1,11 +1,31 @@
 from flask import Flask, render_template_string, request
-from db import get_game, insert_game
+from db import get_game, get_games, insert_game
 
 app = Flask(__name__)
 
 @app.route('/')
-def hello():
-    return 'Hello world, welcome to Railway!'
+def index():
+    games = get_games()
+
+    games_code = ''
+    for game in games:
+        games_code += f'<li><a href="https://igrobuilder.up.railway.app/game/{game["id"]}">{game["title"]} by @{game["username"]}</a></li>'
+
+    html = f'''
+    <html>
+        <head>
+            <title>Recent Games</title>
+        </head>
+        <body>
+            <h1>Recent Games</h1>
+            <ul id="games">
+                {games_code}
+            </ul>
+        </body>
+    </html>
+    '''
+
+    return render_template_string(html)
 
 @app.route('/upload', methods=['POST'])
 def upload_game():
@@ -19,9 +39,7 @@ def upload_game():
     title = request.form.get('title', 'Untitled Game')
     username = request.form.get('username', 'Anonymous')
 
-    # TODO: custom title
     game_id = insert_game(title, content, username)
-    # print(f'http://localhost:8000/game/{game_id}')
     return game_id
 
 @app.route('/game/<game_id>')
